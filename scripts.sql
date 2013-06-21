@@ -1,26 +1,36 @@
-drop table geomtable;
- 
-create table geomtable(the_geom geometry, id int);
+﻿select sqlj.replace_jar('file:///home/{SET USERNAME!}}/olap/scripts.jar', 'resource', true);
+select sqlj.set_classpath('olap', 'resource');
 
-select sqlj.install_jar('file://tpe.jar', 'resource', true);
-
-
-SELECT st_intersects(the_geom) FROM geomtable GROUP BY id;
-
-DROP FUNCTION st_intersection(geometry, geometry) CASCADE;
-
-
-CREATE OR REPLACE FUNCTION st_intersection(base geometry, geom geometry)
+CREATE OR REPLACE FUNCTION olap.st_intersection2(geometry,geometry)
   RETURNS geometry AS
-  'resource.Intersection.getIntersection(base, geom)'
-  LANGUAGE java VOLATILE
+  'olap.it.edu.itba.tp.Intersection.getIntersection'
+  LANGUAGE java
   COST 100;
-ALTER FUNCTION st_intersection(geometry, geometry)
-  OWNER TO postgres;
 
+DROP AGGREGATE st_intersects(geometry) CASCADE;
 
 CREATE AGGREGATE st_intersects (
-  sfunc=st_intersection,
+  sfunc=olap.st_intersection2,
   stype=geometry,
   basetype=geometry
 );
+
+CREATE OR REPLACE FUNCTION olap.st_union2(geometry,geometry)
+  RETURNS geometry AS
+  'olap.it.edu.itba.tp.Centroid.getUnion'
+  LANGUAGE java
+  COST 100;
+
+CREATE OR REPLACE FUNCTION olap.st_findcentroid(geometry)
+  RETURNS geometry AS
+  'olap.it.edu.itba.tp.Centroid.getCentroid'
+  LANGUAGE java
+  COST 100;
+  
+CREATE AGGREGATE st_nearcentroid (
+  sfunc=olap.st_union2,
+  stype=geometry,
+  basetype=geometry,
+  finalfunc=olap.st_findcentroid
+);
+
