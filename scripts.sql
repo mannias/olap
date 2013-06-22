@@ -7,8 +7,6 @@ CREATE OR REPLACE FUNCTION olap.st_intersection2(geometry,geometry)
   LANGUAGE java
   COST 100;
 
-DROP AGGREGATE st_intersects(geometry) CASCADE;
-
 CREATE AGGREGATE st_intersects (
   sfunc=olap.st_intersection2,
   stype=geometry,
