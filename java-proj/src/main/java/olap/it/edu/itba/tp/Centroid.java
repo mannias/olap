@@ -38,14 +38,8 @@ public class Centroid {
 		}
 		WKBReader info = new WKBReader();
 		Geometry elem;
-		Point geom;
 		elem = info.read(WKBReader.hexToBytes(a));
-		geom = elem.getCentroid();
-		if(geom.intersects(elem)){
-			return elem.toString();
-		}else{
-			return getCloser(elem, geom).toString();
-		}
+		return getCloser(elem.union(), elem.getCentroid()).toString();
 	}
 	
 	public static Geometry getCloser(Geometry elem, Point point){
